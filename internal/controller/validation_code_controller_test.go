@@ -1,20 +1,23 @@
-package controller_test
+package controller
 
 import (
 	"context"
+	"mangosteen/config"
 	"mangosteen/internal/database"
-	"mangosteen/internal/router"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
+	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateValidationCode(t *testing.T) {
-	r := router.New()
+	config.LoadAppConfig()
+	database.Connect()
+	r := gin.Default()
 	viper.Set("email.smtp.host", "localhost")
 	viper.Set("email.smtp.port", "1025")
 	email := "frankfang1990@gmail.com"
@@ -22,6 +25,8 @@ func TestCreateValidationCode(t *testing.T) {
 	q := database.NewQuery()
 	count1, _ := q.CountValidationCodes(c, email)
 	w := httptest.NewRecorder()
+	vcc := &ValidationCodeController{}
+	vcc.RegisterRoutes(r.Group("/api"))
 	req, _ := http.NewRequest(
 		"POST",
 		"/api/v1/validation_codes",

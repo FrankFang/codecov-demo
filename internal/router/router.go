@@ -12,6 +12,15 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
 )
 
+type ConFn = func() controller.Controller
+
+func loadControllers() []ConFn {
+	return [](ConFn){
+		controller.NewValidationCodeController,
+		controller.NewSessionController,
+	}
+}
+
 func New() *gin.Engine {
 	config.LoadAppConfig()
 	r := gin.Default()
@@ -19,9 +28,13 @@ func New() *gin.Engine {
 
 	database.Connect()
 
+	api := r.Group("/api")
 	r.GET("/ping", controller.Ping)
-	r.POST("/api/v1/validation_codes", controller.CreateValidationCode)
-	r.POST("/api/v1/session", controller.CreateSession)
+
+	for _, cf := range loadControllers() {
+		cf().RegisterRoutes(api)
+	}
+
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	return r

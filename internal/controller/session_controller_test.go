@@ -1,12 +1,12 @@
-package controller_test
+package controller
 
 import (
 	"context"
 	"encoding/json"
 	"log"
+	"mangosteen/config"
 	"mangosteen/config/queries"
 	"mangosteen/internal/database"
-	"mangosteen/internal/router"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -20,12 +20,16 @@ var (
 	r *gin.Engine
 	q *queries.Queries
 	c context.Context
+	w *httptest.ResponseRecorder
 )
 
 func setupTest(t *testing.T) func(t *testing.T) {
-	r = router.New()
+	database.Connect()
+	config.LoadAppConfig()
+	r = gin.Default()
 	q = database.NewQuery()
 	c = context.Background()
+	w = httptest.NewRecorder()
 	if err := q.DeleteAllUsers(c); err != nil {
 		t.Fatal(err)
 	}
@@ -50,12 +54,13 @@ func TestCreateSession(t *testing.T) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	w := httptest.NewRecorder()
 	j := gin.H{
 		"email": email,
 		"code":  code,
 	}
 	bytes, _ := json.Marshal(j)
+	sc := &SessionController{}
+	sc.RegisterRoutes(r.Group("/api"))
 	req, _ := http.NewRequest(
 		"POST",
 		"/api/v1/session",

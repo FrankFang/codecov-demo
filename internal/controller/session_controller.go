@@ -10,7 +10,27 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func CreateSession(c *gin.Context) {
+type SessionController struct {
+}
+
+func NewSessionController() Controller {
+	return &SessionController{}
+}
+
+func (sc *SessionController) RegisterRoutes(gr *gin.RouterGroup) {
+	group := gr.Group("/v1/session")
+	group.POST("", sc.Create)
+}
+
+func (sc *SessionController) GetPaged(c *gin.Context) {
+	panic("not implemented") // TODO: Implement
+}
+
+func (sc *SessionController) Get(c *gin.Context) {
+	panic("not implemented") // TODO: Implement
+}
+
+func (sc *SessionController) Create(c *gin.Context) {
 	var requestBody struct {
 		Email string `json:"email" binding:"required"`
 		Code  string `json:"code" binding:"required"`
@@ -48,4 +68,12 @@ func CreateSession(c *gin.Context) {
 		"jwt":    jwt,
 		"userId": user.ID,
 	})
+}
+
+func (sc *SessionController) Update(c *gin.Context) {
+	panic("not implemented") // TODO: Implement
+}
+
+func (sc *SessionController) Destroy(c *gin.Context) {
+	panic("not implemented") // TODO: Implement
 }
